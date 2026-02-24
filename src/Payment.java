@@ -1,17 +1,29 @@
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public abstract class Payment {
-    protected double payment;
-    protected String transactionId;
-    protected Logger logger;
+    protected final double amount;
+    protected final String transactionId;
+    protected final PaymentLogger logger;
 
-    protected abstract boolean validate();
-    protected abstract void processPayment(double amount) throws IllegalStateException;
-    protected abstract void refund(double amount) throws IllegalStateException;
-
-    String generateTransactionId(){
-
-        return "transactionId generated";
+    public Payment(double amount, PaymentLogger logger ){
+        if(amount <= 0 ){
+            throw new IllegalArgumentException("Amount must be positive and greater than zero");
+        }
+        this.amount = amount;
+        this.logger = logger;
+        this.transactionId = UUID.randomUUID().toString();
     }
 
+    protected abstract void validate() throws InvalidPaymentException;
+    protected abstract void processPayment() throws PaymentFailedException;
+    protected abstract void refund() throws PaymentFailedException;
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
 }

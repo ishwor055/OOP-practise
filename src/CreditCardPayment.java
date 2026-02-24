@@ -1,47 +1,43 @@
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class CreditCardPayment extends Payment {
     private String cardNumber;
     private String cvv;
     private String expiryDate;
-    private double amount;
-    FileLogger logger;
-    public CreditCardPayment(String cardNumber , String cvv, String expiryDate){
+
+    public CreditCardPayment(double amount, PaymentLogger logger, String cardNumber , String cvv, String expiryDate){
+        super(amount,logger);
         this.cardNumber = cardNumber;
         this.cvv = cvv;
         this.expiryDate = expiryDate;
     }
     @Override
-    public boolean validate(){
-        return isValidCardNumber(cardNumber) && isValidCVV(cvv) && isValidExpiryDate(expiryDate);
+    public void validate() throws InvalidPaymentException{
+         if(! isValidCardNumber(cardNumber) && isValidCVV(cvv) && isValidExpiryDate(expiryDate)) throw  new InvalidPaymentException(" Invalid Card information") ;
+         else logger.log("validation successful for transaction : " + transactionId);
     }
 
     @Override
-    public void processPayment(double amount) {
-        if(!validate()){
-             throw new IllegalStateException("Payment detail is invalid");
-        }
+    public void processPayment() throws PaymentFailedException{
         // Simulate payment processing
-        String last4 = cardNumber.substring(cardNumber.length() - 4);
-        logger.log("Processing payment of $" + amount + " for card ending with " + last4);
+        try {
+            double fee = amount * 0.02;
+            double total = amount + fee;
 
-        // Simulated successful transaction
-        logger.log("Payment successful for card ending with " + last4 + " amount $" + amount);
-        clearSensitiveData();
+            logger.log("Processing credit card payment...");
+            logger.log("Amount: " + amount);
+            logger.log("Fee: " + fee);
+            logger.log("Total charged: " + total);
+
+        } catch (Exception e) {
+            throw new PaymentFailedException("Processing failed");
+        }
     }
 
-    public void refund(double amount){
-        if(!validate()){
-            throw new IllegalStateException("Payment detail is invalid");
-        }
-        // Simulate refund processing
-        String last4 = cardNumber.substring(cardNumber.length() - 4);
-        logger.log("Processing refund of $" + amount + " for card ending with " + last4);
-
-        // Simulated successful transaction
-        logger.log("Refund successful for card ending with " + last4 + " amount $" + amount);
-        clearSensitiveData();
+    public void refund()throws PaymentFailedException {
+        logger.log("Refunding credit card payment for transaction " + transactionId);
     }
 
 
@@ -55,17 +51,14 @@ public class CreditCardPayment extends Payment {
         return cvv!=null && cvv.matches("\\d{3,4}");
     }
 
-    private boolean isValidExpiryDate(String expiryDate){
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
-        YearMonth expiryDateFormat = YearMonth.parse(expiryDate , formatter);
-        return expiryDateFormat.isAfter(YearMonth.now());
+    private boolean isValidExpiryDate(String expiryDate) {
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/yy");
+            YearMonth expiry = YearMonth.parse(expiryDate, formatter);
+            return !expiry.isBefore(YearMonth.now());
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
-
-    private void clearSensitiveData() {
-        cardNumber = null;
-        cvv = null;
-        expiryDate = null;
-    }
-
 
 }

@@ -1,4 +1,4 @@
-public class FileLogger implements PaymentLogger{
+public class ConsoleLogger implements PaymentLogger{
     @Override
     public void log(String message) {
 

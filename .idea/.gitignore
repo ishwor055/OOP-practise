@@ -6,3 +6,23 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# IntelliJ IDEA
+/.idea/
+/*.iml
+
+# Build folders
+/target/
+/out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+.DS_Store
+.idea/uiDesigner.xml
+.idea/vcs.xml
+out/
